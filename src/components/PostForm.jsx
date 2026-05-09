@@ -12,6 +12,12 @@ const initialFormData = {
 function PostForm() {
     const [formData, setFormData] = useState(initialFormData)
 
+    // stato alert
+    const [alert, setAlert] = useState({
+        message: '',
+        type: '',
+    })
+
     function handleChange(e) {
         const { name, value, type, checked } = e.target
 
@@ -36,64 +42,97 @@ function PostForm() {
                 }
             )
 
+            if (!response.ok) {
+                throw new Error('Errore nella richiesta')
+            }
+
             const data = await response.json()
 
             console.log('Post creato:', data)
 
+            // alert successo
+            setAlert({
+                message: 'Post creato con successo!',
+                type: 'success',
+            })
+
             // reset form
             setFormData(initialFormData)
 
+            // rimuove alert dopo 3 secondi
+            setTimeout(() => {
+                setAlert({
+                    message: '',
+                    type: '',
+                })
+            }, 3000)
+
         } catch (error) {
-            console.error('Errore nella chiamata POST:', error)
+            console.error(error)
+
+            // alert errore
+            setAlert({
+                message: 'Errore durante il salvataggio del post',
+                type: 'danger',
+            })
         }
     }
 
     return (
-        <form onSubmit={handleSubmit}>
+        <>
+            {/* ALERT */}
+            {alert.message && (
+                <div className={`alert alert-${alert.type}`}>
+                    {alert.message}
+                </div>
+            )}
 
-            <FormInput
-                label="Autore"
-                name="author"
-                value={formData.author}
-                onChange={handleChange}
-            />
+            <form onSubmit={handleSubmit}>
 
-            <FormInput
-                label="Titolo"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-            />
-
-            <FormTextarea
-                label="Contenuto"
-                name="body"
-                value={formData.body}
-                onChange={handleChange}
-            />
-
-            <div className="form-check mb-4">
-                <input
-                    type="checkbox"
-                    name="public"
-                    checked={formData.public}
+                <FormInput
+                    label="Autore"
+                    name="author"
+                    value={formData.author}
                     onChange={handleChange}
-                    className="form-check-input"
-                    id="public"
                 />
 
-                <label
-                    htmlFor="public"
-                    className="form-check-label"
-                >
-                    Pubblico
-                </label>
-            </div>
+                <FormInput
+                    label="Titolo"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                />
 
-            <button className="btn btn-primary">
-                Crea Post
-            </button>
-        </form>
+                <FormTextarea
+                    label="Contenuto"
+                    name="body"
+                    value={formData.body}
+                    onChange={handleChange}
+                />
+
+                <div className="form-check mb-4">
+                    <input
+                        type="checkbox"
+                        name="public"
+                        checked={formData.public}
+                        onChange={handleChange}
+                        className="form-check-input"
+                        id="public"
+                    />
+
+                    <label
+                        htmlFor="public"
+                        className="form-check-label"
+                    >
+                        Pubblico
+                    </label>
+                </div>
+
+                <button className="btn btn-primary">
+                    Crea Post
+                </button>
+            </form>
+        </>
     )
 }
 
