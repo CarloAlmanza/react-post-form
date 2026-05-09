@@ -9,10 +9,14 @@ const initialFormData = {
     public: false,
 }
 
-function PostForm() {
-    const [formData, setFormData] = useState(initialFormData)
+const API_URL =
+    'https://67c5b4f3351c081993fb1ab6.mockapi.io/api/posts'
 
-    // stato alert
+function PostForm({ onPostCreated }) {
+
+    const [formData, setFormData] =
+        useState(initialFormData)
+
     const [alert, setAlert] = useState({
         message: '',
         type: '',
@@ -23,7 +27,9 @@ function PostForm() {
 
         setFormData({
             ...formData,
-            [name]: type === 'checkbox' ? checked : value,
+            [name]: type === 'checkbox'
+                ? checked
+                : value,
         })
     }
 
@@ -31,48 +37,37 @@ function PostForm() {
         e.preventDefault()
 
         try {
-            const response = await fetch(
-                'https://67c5b4f3351c081993fb1ab6.mockapi.io/api/posts',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData),
-                }
-            )
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
 
             if (!response.ok) {
-                throw new Error('Errore nella richiesta')
+                throw new Error('Errore API')
             }
 
             const data = await response.json()
 
-            console.log('Post creato:', data)
+            console.log(data)
 
-            // alert successo
+            // refetch lista
+            await onPostCreated()
+
             setAlert({
-                message: 'Post creato con successo!',
+                message: 'Post creato!',
                 type: 'success',
             })
 
-            // reset form
             setFormData(initialFormData)
-
-            // rimuove alert dopo 3 secondi
-            setTimeout(() => {
-                setAlert({
-                    message: '',
-                    type: '',
-                })
-            }, 3000)
 
         } catch (error) {
             console.error(error)
 
-            // alert errore
             setAlert({
-                message: 'Errore durante il salvataggio del post',
+                message: 'Errore durante il salvataggio',
                 type: 'danger',
             })
         }
@@ -80,7 +75,6 @@ function PostForm() {
 
     return (
         <>
-            {/* ALERT */}
             {alert.message && (
                 <div className={`alert alert-${alert.type}`}>
                     {alert.message}
@@ -111,6 +105,7 @@ function PostForm() {
                 />
 
                 <div className="form-check mb-4">
+
                     <input
                         type="checkbox"
                         name="public"
@@ -126,11 +121,13 @@ function PostForm() {
                     >
                         Pubblico
                     </label>
+
                 </div>
 
                 <button className="btn btn-primary">
                     Crea Post
                 </button>
+
             </form>
         </>
     )
